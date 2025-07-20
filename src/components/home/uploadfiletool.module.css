@@ -23,3 +23,19 @@
     z-index: 5;
     opacity: 0;
 }
+
+.upd{
+    background: #00abff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  color: #fff;
+}
+
+.uploadLabel{
+  display: flex;
+  padding: 9px;
+  align-items: center;
+}
+

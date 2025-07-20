@@ -213,7 +213,7 @@ function generateMarzipanoHTML(data, baseurl) {
   `.trim();
 }
 
-function createMarzipanoHTML(data,BASE_URL) {
+function createMarzipanoHTML(data,BASE_URL,projectName) {
 
   const html = `<!DOCTYPE html>
 <html>
@@ -309,14 +309,11 @@ function createMarzipanoHTML(data,BASE_URL) {
     }
 
     .link-hotspot {
-      width: 64px;
-      height: 64px;
-      border: 2px solid white;
+      width: 60px;
+      height: 60px;
       border-radius: 4px;
       overflow: hidden;
-      background: white;
       cursor: pointer;
-      box-shadow: 0 0 5px rgba(0,0,0,0.5);
     }
     .link-hotspot img {
       width: 100%;
@@ -324,9 +321,21 @@ function createMarzipanoHTML(data,BASE_URL) {
       object-fit: cover;
       display: block;
     }
+
+    .prgname{
+      z-index: 999;
+      background: #ffffff45;
+      text-align: center;
+      padding: 13px;
+      font-size: 18px;
+      position: absolute;
+      right: 0px;
+      border-radius: 0px 0px 0px 12px;
+    }
   </style>
 </head>
 <body>
+  <div class="prgname">${projectName}</div>
   <div id="sidebar"></div>
   <div id="pano"></div>
   <script src="https://frontme.storage.c2.liara.space/marzipano.js"></script>
@@ -401,7 +410,7 @@ function createMarzipanoHTML(data,BASE_URL) {
         dom.className = 'link-hotspot';
 
         const thumb = document.createElement('img');
-        thumb.src = BASE_URL + link.target;
+        thumb.src = "https://frontme.storage.c2.liara.space/link.png";
         thumb.alt = 'link thumbnail';
         dom.appendChild(thumb);
 

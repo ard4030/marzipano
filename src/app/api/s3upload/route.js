@@ -10,7 +10,8 @@ export async function POST(req) {
   const buffer = Buffer.from(arrayBuffer);
 
 
-  const newFileName = file.name.replace(/\s+/g, '');
+  let newFileName = file.name.replace(/\s+/g, '');
+  newFileName = newFileName + String(Date.now())
 
   const command = new PutObjectCommand({
     Bucket: process.env.LIARA_BUCKET_NAME,

@@ -175,3 +175,25 @@ background: rgba(255, 255, 255, .82);
 .export{
   background: green!important;
 }
+
+.prjname{
+  width: 100%;
+  margin-bottom: 10px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 10px;
+  background: #eee;
+}
+
+.titleImage{
+  background: #fff;
+  margin-left: 8px;
+  padding: 6px 5px;
+  box-sizing: border-box;
+  width: 80%;
+  font-size: 14px;
+  border-radius: 3px;
+}
+
+.infoBox > input:first-child{border-radius: 4px 4px 0px 0px;}
+.infoBox > input:nth-child(2){border-radius: 0px 0px 4px 4px;}

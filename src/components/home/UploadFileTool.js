@@ -1,145 +1,90 @@
-"use client"
-import { FileContext } from '@/context/FileContext'
-import axios from 'axios'
-import React, { useContext, useEffect, useState } from 'react'
-import styles from "./uploadfiletool.module.css"
-import { MdFileUpload } from 'react-icons/md'
+"use client";
+import { useState, useRef, useContext, useEffect } from "react";
+import { FileContext } from "@/context/FileContext";
+import axios from "axios";
+import { MdFileUpload } from "react-icons/md";
+import styles from "./uploadfiletool.module.css";
 
 const UploadFileTool = () => {
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState(null); // 'success' | 'error'
   const { setImage, setImages, image } = useContext(FileContext);
+  const [isUploading, setIsUploading] = useState(false);
+  const inputRef = useRef(null);
 
   const handleChange = (e) => {
-    setFile(e.target.files[0]);
-    setStatus(null);
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    uploadFiles(files);
   };
 
-  useEffect(() => {
-    if (file) {
-      // upload();
-      uploadLiara()
-    }
-  }, [file]);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    if (!files.length) return;
 
-  const upload = async () => {
-    const formData = new FormData();
-    formData.append("file", file);
+    uploadFiles(files);
+  };
 
-    try {
-      const res = await axios.post("/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (event) => {
-          const percent = Math.round((event.loaded * 100) / event.total);
-          setProgress(percent);
-        },
-      });
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
 
-      if (res.status === 200) {
+  const uploadFiles = async (files) => {
+    setIsUploading(true);
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await axios.post("/api/s3upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        const data = res.data;
+
         const finalImage = {
           active: false,
-          // url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-          name: res.data.data,
+          url: `${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${data.fileName}`,
+          name: data.fileName,
           infoHotspots: [],
           infoLinks: [],
           initialView: null,
         };
-        if (!image) {
-          setImage(finalImage);
-        }
+
+        if (!image) setImage(finalImage);
         setImages((prev) => [...prev, finalImage]);
-        setStatus('success');
-      } else {
-        setStatus('error');
+      } catch (error) {
+        console.error("Upload error:", error.message);
       }
-    } catch (err) {
-      setStatus('error');
     }
+
+    setIsUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
   };
 
-//   const uploadWithS3 = async () => {
-//     setLoading(true)
-//     try {
-//       const fileUrl = await uploadLiara(file)
-//       console.log(`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${fileUrl.data}`)
-//       if(fileUrl.success){
-//         const finalImage = {
-//           active: false,
-//           // url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-//           url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-//           name: res.data.data,
-//           infoHotspots: [],
-//           infoLinks: [],
-//           initialView: null,
-//         };
-//         if (!image) {
-//           setImage(finalImage);
-//         }
-//         setImages((prev) => [...prev, finalImage]);
-//         setStatus('success');
-//       }else{
-
-//       }
-//       console.log(fileUrl)
-    
-//     } catch (error) {
-//       console.log(error.message)
-//     }
-//     setLoading(false)
-//   }
-
-  const uploadLiara = async () => {
-    setLoading(true)
-    try {
-      const formData = new FormData();
-      formData.append("file",file);
-      const res = await fetch("/api/s3upload",{
-        method:"POST",
-
-        body:formData
-      })
-      const data = await res.json()
-      const finalImage = {
-        active: false,
-        // url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-        url: `${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${data.fileName}`,
-        name: data.fileName,
-        infoHotspots: [],
-        infoLinks: [],
-        initialView: null,
-      };
-      if (!image) {
-        setImage(finalImage);
-      }
-      setImages((prev) => [...prev, finalImage]);
-      setStatus('success');
-      console.log(data)
-    } catch (error) {
-      setStatus('error');
-      console.log(error.message)
-    }
-    setLoading(false)
-
-  }
-    
-
   return (
-    <div className={styles.upd}>
-        {
-            loading  ?
-        <span>Uploading ...</span>:
-        <span>
-            <MdFileUpload /> &nbsp;
-            Upload File
-        </span>
-        }
+    <div
+      className={styles.upd}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+    >
+      {!isUploading && (
+        <label className={styles.uploadLabel}>
+          <MdFileUpload /> &nbsp; Upload File
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            onChange={handleChange}
+            className={styles.input}
+          />
+        </label>
+      )}
 
-        <input onChange={handleChange} type='file' />
+      {isUploading && <span className={styles.loadingText}>در حال آپلود...</span>}
     </div>
-  )
-}
+  );
+};
 
-export default UploadFileTool
+export default UploadFileTool;

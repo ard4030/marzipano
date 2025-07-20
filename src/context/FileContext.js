@@ -5,6 +5,7 @@ export const FileContext = createContext();
 export const FileProvider = ({children}) => {
     const [images,setImages] = useState([]);
     const [image,setImage] = useState(null);
+    const [projectName,setProjectName] = useState("");
     const [firstView,setFirstView] = useState(null);
     const [infoHotspotsData,setInfoHotspotData] = useState([
         // { yaw: 0, pitch: 0, title: "Title 1", text: "Text 1" },
@@ -18,7 +19,8 @@ export const FileProvider = ({children}) => {
             image,setImage,
             firstView,setFirstView,
             images,setImages,
-            infoHotspotsData,setInfoHotspotData
+            infoHotspotsData,setInfoHotspotData,
+            projectName,setProjectName
             }}>
             {children}
         </FileContext>

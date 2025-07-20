@@ -1,182 +1,123 @@
 "use client";
-import { FileContext } from '@/context/FileContext';
-import axios from 'axios';
-import React, { useContext, useEffect, useState } from 'react';
-import { UploadCloud, CheckCircle, XCircle } from 'lucide-react';
-import styles from "./upload.module.css"
+import React, { useState, useContext, useEffect } from "react";
+import { FileContext } from "@/context/FileContext";
+import { UploadCloud, CheckCircle, XCircle } from "lucide-react";
+import styles from "./upload.module.css";
 
-
-const UploadFile = () => {
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState(null); // 'success' | 'error'
+const UploadFileMultiDrag = () => {
   const { setImage, setImages, image } = useContext(FileContext);
+  const [files, setFiles] = useState([]);
+  const [statusList, setStatusList] = useState([]); // success | error | loading
 
   const handleChange = (e) => {
-    setFile(e.target.files[0]);
-    setStatus(null);
+    handleFiles(e.target.files);
+  };
+
+  const handleFiles = (selectedFiles) => {
+    const newFiles = Array.from(selectedFiles).map((file) => ({
+      file,
+      progress: 0,
+      status: "loading", // success | error
+    }));
+    setFiles((prev) => [...prev, ...newFiles]);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    handleFiles(e.dataTransfer.files);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
 
   useEffect(() => {
-    if (file) {
-      // upload();
-      uploadLiara()
-    }
-  }, [file]);
+    files.forEach((f, index) => {
+      if (f.status === "loading") uploadFile(f.file, index);
+    });
+  }, [files]);
 
-  const upload = async () => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await axios.post("/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (event) => {
-          const percent = Math.round((event.loaded * 100) / event.total);
-          setProgress(percent);
-        },
-      });
-
-      if (res.status === 200) {
-        const finalImage = {
-          active: false,
-          // url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-          name: res.data.data,
-          infoHotspots: [],
-          infoLinks: [],
-          initialView: null,
-        };
-        if (!image) {
-          setImage(finalImage);
-        }
-        setImages((prev) => [...prev, finalImage]);
-        setStatus('success');
-      } else {
-        setStatus('error');
-      }
-    } catch (err) {
-      setStatus('error');
-    }
-  };
-
-  const uploadWithS3 = async () => {
-    setLoading(true)
-    try {
-      const fileUrl = await uploadLiara(file)
-      // console.log(`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${fileUrl.data}`)
-      if(fileUrl.success){
-        const finalImage = {
-          active: false,
-          // url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-          name: res.data.data,
-          infoHotspots: [],
-          infoLinks: [],
-          initialView: null,
-        };
-        if (!image) {
-          setImage(finalImage);
-        }
-        setImages((prev) => [...prev, finalImage]);
-        setStatus('success');
-      }else{
-
-      }
-      console.log(fileUrl)
-    
-    } catch (error) {
-      console.log(error.message)
-    }
-    setLoading(false)
-  }
-
-  const uploadLiara = async () => {
-    setLoading(true)
+  const uploadFile = async (file, index) => {
     try {
       const formData = new FormData();
-      formData.append("file",file);
-      const res = await fetch("/api/s3upload",{
-        method:"POST",
+      formData.append("file", file);
 
-        body:formData
-      })
-      const data = await res.json()
+      const res = await fetch("/api/s3upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error("Upload failed");
+
       const finalImage = {
         active: false,
-        // url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
         url: `${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${data.fileName}`,
         name: data.fileName,
+        title:data.fileName,
         infoHotspots: [],
         infoLinks: [],
         initialView: null,
       };
-      if (!image) {
-        setImage(finalImage);
-      }
+
+      if (!image) setImage(finalImage);
       setImages((prev) => [...prev, finalImage]);
-      setStatus('success');
-      console.log(res)
-      console.log(data)
-    } catch (error) {
-      setStatus('error');
-      console.log(error.message)
+
+      updateFileStatus(index, "success");
+    } catch (err) {
+      updateFileStatus(index, "error");
+      console.error(err.message);
     }
-    setLoading(false)
+  };
 
-  }
-
-
+  const updateFileStatus = (index, status) => {
+    setFiles((prev) =>
+      prev.map((f, i) => (i === index ? { ...f, status } : f))
+    );
+  };
 
   return (
-    <>
-    {
-      loading?
-      <div className={styles.loading}>
-        Uplaoding ....
-      </div>
-      :
+    <div
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      className="w-full max-w-xl mx-auto mt-6 p-6 border-2 border-dashed border-gray-300 rounded-2xl shadow-md bg-white"
+    >
+      <label className="flex flex-col items-center justify-center cursor-pointer">
+        <UploadCloud className="w-10 h-10 text-blue-500 mb-2" />
+        <span className="text-gray-500 text-sm">
+          برای آپلود، فایل‌ها را انتخاب یا درگ کنید
+        </span>
+        <input onChange={handleChange} type="file" multiple className="hidden" />
+      </label>
 
-      <div className="w-full max-w-md mx-auto mt-6 p-6 border border-gray-200 rounded-2xl shadow-lg bg-white space-y-4">
-        <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-blue-400 transition">
-          <UploadCloud className="w-10 h-10 text-blue-500 mb-2" />
-          <span className="text-gray-500 text-sm">برای آپلود، فایل را انتخاب کنید</span>
-          <input onChange={handleChange} type="file" className="hidden" />
-        </label>
-
-        {file && (
-          <div className="text-sm text-gray-700 text-center">{file.name}</div>
-        )}
-
-        {progress > 0 && progress < 100 && (
-          <div className="w-full bg-gray-200 rounded-full h-2">
+      {files.length > 0 && (
+        <div className="mt-4 space-y-2">
+          {files.map((f, idx) => (
             <div
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        )}
-
-        {progress === 100 && status === 'success' && (
-          <div className="flex items-center text-green-600 text-sm gap-2 justify-center">
-            <CheckCircle className="w-5 h-5" />
-            آپلود با موفقیت انجام شد!
-          </div>
-        )}
-
-        {status === 'error' && (
-          <div className="flex items-center text-red-500 text-sm gap-2 justify-center">
-            <XCircle className="w-5 h-5" />
-            خطا در آپلود فایل. دوباره تلاش کنید.
-          </div>
-        )}
-
-      </div>
-    }
-    
-    </>
+              key={idx}
+              className="p-2 rounded bg-gray-100 flex justify-between items-center text-sm"
+            >
+              <span className="truncate max-w-[200px]">{f.file.name}</span>
+              {f.status === "loading" && <span className="text-blue-500">در حال آپلود...</span>}
+              {f.status === "success" && (
+                <span className="flex items-center gap-1 text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                  موفق
+                </span>
+              )}
+              {f.status === "error" && (
+                <span className="flex items-center gap-1 text-red-500">
+                  <XCircle className="w-4 h-4" />
+                  خطا
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
-export default UploadFile;
+export default UploadFileMultiDrag;

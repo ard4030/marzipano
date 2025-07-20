@@ -12,7 +12,7 @@ import { FaRegEye } from "react-icons/fa";
 import { PiExportFill } from "react-icons/pi";
 
 const EditImage = () => {
-  const { image, setFirstView, images, setImages, setImage } =
+  const { image, setFirstView, images, setImages, setImage , projectName,setProjectName } =
     useContext(FileContext);
 
   const panoRef = useRef(null);
@@ -23,6 +23,9 @@ const EditImage = () => {
 
   const [refresh, setRefresh] = useState(false);
   const [activeEvent, setActiveEvent] = useState(null);
+
+  const [autoRotateEnabled, setAutoRotateEnabled] = useState(false);
+  const autoRotateRef = useRef(null);
 
   const handleViewMarzipano = () => {
     if (!window.Marzipano || !viewerRef.current || !image) return;
@@ -339,7 +342,7 @@ const EditImage = () => {
   // };
 
   const handleExport = async () => {
-    const htmlContent = createMarzipanoHTML(images,`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}`);
+    const htmlContent = createMarzipanoHTML(images,`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}`,projectName);
 
     const file = new File([htmlContent], "viewer.html", {
       type: "text/html",
@@ -366,15 +369,47 @@ const EditImage = () => {
     //   alert('خطا در ذخیره فایل HTML');
     // }
   };
+
+
+  const changeImageTitle = (e,index) => {
+    let copyImages = [...images];
+    copyImages[index]["title"] = e.target.value;
+    setImages(copyImages)
+  }
+
+  const toggleAutoRotate = () => {
+    if (!viewerRef.current) return;
+
+    if (autoRotateEnabled) {
+      viewerRef.current.stopMovement();
+      setAutoRotateEnabled(false);
+    } else {
+      autoRotateRef.current = window.Marzipano.autorotate({
+        yawSpeed: 0.1, // سرعت چرخش
+        targetPitch: 0,
+        targetFov: Math.PI / 2,
+      });
+
+      viewerRef.current.startMovement(autoRotateRef.current);
+      setAutoRotateEnabled(true);
+    }
+  };
+
   return (
     <div className={styles.all}>
 
       <div className={styles.left}>
+
+        <input 
+        value={projectName}
+        onChange={(e) => setProjectName(e.target.value) }
+        className={styles.prjname} placeholder="Project Name" />
+
         <UploadFileTool />
         <div className={styles.imageList}>
           {images.map((item, index) => (
             <div
-              title={item.name}
+              title={item.title}
               key={index}
               className={`${styles.item} ${
                 image.name === item.name ? styles.active : ""
@@ -386,7 +421,7 @@ const EditImage = () => {
               }}
             >
               <Image src={item.url} alt={item.name} width={70} height={70} />
-              <span className={styles.name}>{item.name}</span>
+              <input onChange={(e) => changeImageTitle(e,index)} value={item.title ?? ""} className={styles.titleImage}/>
             </div>
           ))}
         </div>
@@ -428,6 +463,10 @@ const EditImage = () => {
           <button className={styles.export} onClick={handleExport}>
             <PiExportFill /> &nbsp;
             Export
+          </button>
+
+          <button onClick={toggleAutoRotate} className={autoRotateEnabled ? styles.activEv : ""}>
+            🔁 Autorotate {autoRotateEnabled ? "On" : "Off"}
           </button>
         </div>
       </div>
