@@ -317,25 +317,54 @@ const EditImage = () => {
   //   a.click();
   // };
 
+  // const handleExport = async () => {
+  //   const htmlContent = createMarzipanoHTML(images,`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}`);
+
+  //   // ارسال به API
+  //   const res = await fetch('/api/save-html', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json'
+  //     },
+  //     body: JSON.stringify({ html: htmlContent })
+  //   });
+
+  //   if (res.ok) {
+  //     // باز کردن در تب جدید
+  //     window.open('/generated/viewer.html', '_blank');
+  //   } else {
+  //     alert('خطا در ذخیره فایل HTML');
+  //   }
+  // };
+
   const handleExport = async () => {
-  const htmlContent = createMarzipanoHTML(images,`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}`);
+    const htmlContent = createMarzipanoHTML(images,`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}`);
 
-  // ارسال به API
-  const res = await fetch('/api/save-html', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ html: htmlContent })
-  });
+    const file = new File([htmlContent], "viewer.html", {
+      type: "text/html",
+    });
 
-  if (res.ok) {
-    // باز کردن در تب جدید
-    window.open('/generated/viewer.html', '_blank');
-  } else {
-    alert('خطا در ذخیره فایل HTML');
-  }
-};
+    // ارسال به API
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/savehtml1", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    window.open(data.url, '_blank');
+    console.log("آپلود شد:", data.url);
+    // return data.url;
+
+    // if (res.ok) {
+    //   // باز کردن در تب جدید
+    //   window.open('/generated/viewer.html', '_blank');
+    // } else {
+    //   alert('خطا در ذخیره فایل HTML');
+    // }
+  };
   return (
     <div className={styles.all}>
 
