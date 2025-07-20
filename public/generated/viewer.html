@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Marzipano Viewer</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      position: relative;
+      font-family: sans-serif;
+    }
+    #pano {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: #000;
+    }
+    #sidebar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 90px;
+      max-height: 90%;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10;
+    }
+    #sidebar img {
+      width: 100%;
+      height: auto;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      transition: border 0.3s;
+    }
+    #sidebar img:hover {
+      border-color: #007bff;
+    }
+
+    .info-hotspot {
+      position: relative;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .info-icon {
+      width: 32px;
+      height: 32px;
+      background: #007bff;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+    .info-icon:hover {
+      background: #0056b3;
+    }
+    .info-popup {
+      position: absolute;
+      top: -10px;
+      left: 40px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 14px;
+      color: #333;
+      display: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      z-index: 999;
+      line-height: 22px;
+      width: max-content;
+    }
+    .info-hotspot:hover .info-popup {
+      display: block;
+    }
+
+    .link-hotspot {
+      width: 64px;
+      height: 64px;
+      border: 2px solid white;
+      border-radius: 4px;
+      overflow: hidden;
+      background: white;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    }
+    .link-hotspot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar"></div>
+  <div id="pano"></div>
+  <script src="https://frontme.storage.c2.liara.space/marzipano.js"></script>
+  <script>
+    const data = [{"active":false,"url":"https://frontme.storage.c2.liara.space/WhatsAppImage2025-07-17at1.19.59PM.jpeg","name":"WhatsAppImage2025-07-17at1.19.59PM.jpeg","infoHotspots":[{"yaw":0.7912742269775528,"pitch":0.22994902732156497,"fov":1.5707963267948966,"title":"شسیشسی","text":"شسیشسیش","id":1753000122186}],"infoLinks":[],"initialView":null,"linkHotspots":[{"yaw":-0.7944069787050694,"pitch":0.07882523243401707,"fov":1.5707963267948966,"target":"WhatsAppImage2025-07-17at1.20.00PM.jpeg","id":1753000115121}]},{"active":false,"url":"https://frontme.storage.c2.liara.space/WhatsAppImage2025-07-17at1.20.00PM.jpeg","name":"WhatsAppImage2025-07-17at1.20.00PM.jpeg","infoHotspots":[{"yaw":0.21982055318021843,"pitch":-0.08482060123881219,"fov":1.5707963267948966,"title":"ررسری","text":"سیبسیب","id":1753000132635}],"infoLinks":[],"initialView":null}];
+    const BASE_URL = "https://frontme.storage.c2.liara.space/";
+    const viewer = new Marzipano.Viewer(document.getElementById('pano'));
+    const scenes = {};
+
+    // ایجاد همه‌ی صحنه‌ها
+    data.forEach(sceneData => {
+      const url = BASE_URL + sceneData.name;
+      const source = Marzipano.ImageUrlSource.fromString(url);
+      const geometry = new Marzipano.EquirectGeometry([{ width: 4000 }]);
+      const view = new Marzipano.RectilinearView(sceneData.initialView || { yaw: 0, pitch: 0, fov: Math.PI/2 });
+
+      const scene = viewer.createScene({
+        source,
+        geometry,
+        view,
+        pinFirstLevel: true
+      });
+
+      scenes[sceneData.name] = { scene, data: sceneData };
+    });
+
+    // نمایش اولین صحنه
+    const firstScene = scenes[data[0].name];
+    firstScene.scene.switchTo();
+
+    // ایجاد لیست تصاویر در سایدبار
+    const sidebar = document.getElementById('sidebar');
+    data.forEach(sceneData => {
+      const thumb = document.createElement('img');
+      thumb.src = BASE_URL + sceneData.name;
+      thumb.alt = sceneData.name;
+      thumb.addEventListener('click', () => {
+        scenes[sceneData.name].scene.switchTo();
+      });
+      sidebar.appendChild(thumb);
+    });
+
+    // ایجاد هات‌اسپات‌ها
+    data.forEach(sceneData => {
+      const scene = scenes[sceneData.name].scene;
+
+      // infoHotspots
+      (sceneData.infoHotspots || []).forEach(hotspot => {
+        const dom = document.createElement('div');
+        dom.className = 'info-hotspot';
+
+        const icon = document.createElement('div');
+        icon.className = 'info-icon';
+        icon.textContent = 'i';
+
+        const popup = document.createElement('div');
+        popup.className = 'info-popup';
+        popup.innerHTML = '<strong>' + hotspot.title + '</strong><br>' + hotspot.text;
+
+        dom.appendChild(icon);
+        dom.appendChild(popup);
+
+        scene.hotspotContainer().createHotspot(dom, { yaw: hotspot.yaw, pitch: hotspot.pitch });
+      });
+
+      // linkHotspots
+      (sceneData.linkHotspots || []).forEach(link => {
+        const targetScene = Object.values(scenes).find(s => s.data.name === link.target);
+        if (!targetScene) return;
+
+        const dom = document.createElement('div');
+        dom.className = 'link-hotspot';
+
+        const thumb = document.createElement('img');
+        thumb.src = BASE_URL + link.target;
+        thumb.alt = 'link thumbnail';
+        dom.appendChild(thumb);
+
+        dom.addEventListener('click', () => {
+          targetScene.scene.switchTo();
+        });
+
+        scene.hotspotContainer().createHotspot(dom, { yaw: link.yaw, pitch: link.pitch });
+      });
+    });
+  </script>
+</body>
+</html>

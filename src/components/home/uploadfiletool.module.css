@@ -1,0 +1,25 @@
+.upd span{
+    width: 100%;
+  height: 42px;
+  background: blue;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.upd{
+    position: relative;
+}
+
+.upd input{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    opacity: 0;
+}
