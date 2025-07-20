@@ -3,7 +3,7 @@ import { FileContext } from '@/context/FileContext';
 import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { UploadCloud, CheckCircle, XCircle } from 'lucide-react';
-import { S3 } from '@aws-sdk/client-s3';
+import styles from "./upload.module.css"
 
 
 const UploadFile = () => {
@@ -93,6 +93,7 @@ const UploadFile = () => {
   }
 
   const uploadLiara = async () => {
+    setLoading(true)
     try {
       const formData = new FormData();
       formData.append("file",file);
@@ -122,45 +123,59 @@ const UploadFile = () => {
       setStatus('error');
       console.log(error.message)
     }
+    setLoading(false)
+
   }
 
 
 
   return (
-    <div className="w-full max-w-md mx-auto mt-6 p-6 border border-gray-200 rounded-2xl shadow-lg bg-white space-y-4">
-      <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-blue-400 transition">
-        <UploadCloud className="w-10 h-10 text-blue-500 mb-2" />
-        <span className="text-gray-500 text-sm">برای آپلود، فایل را انتخاب کنید</span>
-        <input onChange={handleChange} type="file" className="hidden" />
-      </label>
+    <>
+    {
+      loading?
+      <div className={styles.loading}>
+        Uplaoding ....
+      </div>
+      :
 
-      {file && (
-        <div className="text-sm text-gray-700 text-center">{file.name}</div>
-      )}
+      <div className="w-full max-w-md mx-auto mt-6 p-6 border border-gray-200 rounded-2xl shadow-lg bg-white space-y-4">
+        <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-blue-400 transition">
+          <UploadCloud className="w-10 h-10 text-blue-500 mb-2" />
+          <span className="text-gray-500 text-sm">برای آپلود، فایل را انتخاب کنید</span>
+          <input onChange={handleChange} type="file" className="hidden" />
+        </label>
 
-      {progress > 0 && progress < 100 && (
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      )}
+        {file && (
+          <div className="text-sm text-gray-700 text-center">{file.name}</div>
+        )}
 
-      {progress === 100 && status === 'success' && (
-        <div className="flex items-center text-green-600 text-sm gap-2 justify-center">
-          <CheckCircle className="w-5 h-5" />
-          آپلود با موفقیت انجام شد!
-        </div>
-      )}
+        {progress > 0 && progress < 100 && (
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
 
-      {status === 'error' && (
-        <div className="flex items-center text-red-500 text-sm gap-2 justify-center">
-          <XCircle className="w-5 h-5" />
-          خطا در آپلود فایل. دوباره تلاش کنید.
-        </div>
-      )}
-    </div>
+        {progress === 100 && status === 'success' && (
+          <div className="flex items-center text-green-600 text-sm gap-2 justify-center">
+            <CheckCircle className="w-5 h-5" />
+            آپلود با موفقیت انجام شد!
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="flex items-center text-red-500 text-sm gap-2 justify-center">
+            <XCircle className="w-5 h-5" />
+            خطا در آپلود فایل. دوباره تلاش کنید.
+          </div>
+        )}
+
+      </div>
+    }
+    
+    </>
   );
 };
 

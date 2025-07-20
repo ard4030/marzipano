@@ -152,9 +152,10 @@ const EditImage = () => {
           <input placeholder="title" value="${title}" class="${styles.title}" />
           <input placeholder="text" value="${text}" class="${styles.text}" />
           <button class="${styles.deleteBtn}">🗑</button>
-          <button class="${styles.info}">⠿</button>
+          
         </div>
       `;
+      // <button class="${styles.info}">⠿</button>
 
       hotspotElement
         .querySelector(`.${styles.title}`)

@@ -20,7 +20,7 @@ const UploadFileTool = () => {
   useEffect(() => {
     if (file) {
       // upload();
-      uploadWithS3()
+      uploadLiara()
     }
   }, [file]);
 
@@ -60,38 +60,39 @@ const UploadFileTool = () => {
     }
   };
 
-  const uploadWithS3 = async () => {
-    setLoading(true)
-    try {
-      const fileUrl = await uploadLiara(file)
-      console.log(`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${fileUrl.data}`)
-      if(fileUrl.success){
-        const finalImage = {
-          active: false,
-          // url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-          url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
-          name: res.data.data,
-          infoHotspots: [],
-          infoLinks: [],
-          initialView: null,
-        };
-        if (!image) {
-          setImage(finalImage);
-        }
-        setImages((prev) => [...prev, finalImage]);
-        setStatus('success');
-      }else{
+//   const uploadWithS3 = async () => {
+//     setLoading(true)
+//     try {
+//       const fileUrl = await uploadLiara(file)
+//       console.log(`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${fileUrl.data}`)
+//       if(fileUrl.success){
+//         const finalImage = {
+//           active: false,
+//           // url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
+//           url: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${res.data.data}`,
+//           name: res.data.data,
+//           infoHotspots: [],
+//           infoLinks: [],
+//           initialView: null,
+//         };
+//         if (!image) {
+//           setImage(finalImage);
+//         }
+//         setImages((prev) => [...prev, finalImage]);
+//         setStatus('success');
+//       }else{
 
-      }
-      console.log(fileUrl)
+//       }
+//       console.log(fileUrl)
     
-    } catch (error) {
-      console.log(error.message)
-    }
-    setLoading(false)
-  }
+//     } catch (error) {
+//       console.log(error.message)
+//     }
+//     setLoading(false)
+//   }
 
   const uploadLiara = async () => {
+    setLoading(true)
     try {
       const formData = new FormData();
       formData.append("file",file);
@@ -120,14 +121,16 @@ const UploadFileTool = () => {
       setStatus('error');
       console.log(error.message)
     }
+    setLoading(false)
+
   }
     
 
   return (
     <div className={styles.upd}>
         {
-            progress && progress > 0 ?
-        <span>{progress}</span>:
+            loading  ?
+        <span>Uploading ...</span>:
         <span>
             <MdFileUpload /> &nbsp;
             Upload File
