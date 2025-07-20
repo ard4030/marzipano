@@ -21,7 +21,7 @@ const UploadFile = () => {
   useEffect(() => {
     if (file) {
       // upload();
-      uploadWithS3()
+      uploadLiara()
     }
   }, [file]);
 
@@ -65,7 +65,7 @@ const UploadFile = () => {
     setLoading(true)
     try {
       const fileUrl = await uploadLiara(file)
-      console.log(`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${fileUrl.data}`)
+      // console.log(`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${fileUrl.data}`)
       if(fileUrl.success){
         const finalImage = {
           active: false,
@@ -116,6 +116,7 @@ const UploadFile = () => {
       }
       setImages((prev) => [...prev, finalImage]);
       setStatus('success');
+      console.log(res)
       console.log(data)
     } catch (error) {
       setStatus('error');
