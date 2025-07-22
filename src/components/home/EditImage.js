@@ -296,6 +296,8 @@ const EditImage = () => {
       `;
 
       const selectEl = hotspotElement.querySelector(`.${styles.targetSelect}`);
+      
+
       const deleteBtn = hotspotElement.querySelector(`.${styles.deleteBtn}`);
       const linkIconBtn = hotspotElement.querySelector(`.${styles.linkIcon}`);
       const imageEl = hotspotElement.querySelector("img");
@@ -308,10 +310,23 @@ const EditImage = () => {
       imageEl.style.transform = `rotate(${rotation}deg)`;
       imageEl.style.transition = "transform 0.3s ease";
 
-      // تغییر مقصد لینک
-      selectEl?.addEventListener("change", (e) => {
-        inputChange("target", index, e.target.value, "linkHotspots");
+      selectEl?.addEventListener("click", (e) => {
+        e.stopPropagation(); // ⛔ جلوی رسیدن به ویو رو بگیر
       });
+
+      // تغییر مقصد لینک
+    selectEl?.addEventListener("change", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      inputChange("target", index, e.target.value, "linkHotspots");
+
+      if (viewerRef.current) {
+        viewerRef.current.controls().disable();
+      }
+    });
+
+
+
 
       // حذف هات‌اسپات
       deleteBtn?.addEventListener("click", () => {
@@ -332,14 +347,18 @@ const EditImage = () => {
       // درگ کردن برای تغییر مکان
       let isDragging = false;
 
+
       hotspotElement.addEventListener("mousedown", (e) => {
         e.stopPropagation();
-        isDragging = true;
-        document.body.style.cursor = "grabbing";
-
         if (viewerRef.current) {
           viewerRef.current.controls().disable();
         }
+        isDragging = true;
+        document.body.style.cursor = "grabbing";
+
+        // if (viewerRef.current) {
+        //   viewerRef.current.controls().disable();
+        // }
       });
 
       document.addEventListener("mouseup", () => {
@@ -347,9 +366,9 @@ const EditImage = () => {
           isDragging = false;
           document.body.style.cursor = "default";
 
-          if (viewerRef.current) {
-            viewerRef.current.controls().enable();
-          }
+          // if (viewerRef.current) {
+          //   viewerRef.current.controls().disable();
+          // }
         }
       });
 
@@ -469,11 +488,21 @@ const EditImage = () => {
     if (image?.linkHotspots?.length > 0) {
       addLinkHotspotsFromArray(image.linkHotspots);
     }
+
   }, [images]);
 
   useEffect(() => {
     renderAllHotspots();
   }, [image.infoHotspots, image.linkHotspots]);
+
+  useEffect(() => {
+    panoRef.current.addEventListener("click",() => {
+      if (viewerRef.current) {
+        viewerRef.current.controls().enable();
+      }
+    })
+  }, [])
+  
 
   // const handleExport = () => {
   //   navigator.clipboard.writeText(JSON.stringify(images));
@@ -561,8 +590,6 @@ const EditImage = () => {
     });
   };
 
-
-
   const changeImageTitle = (e, index) => {
     let copyImages = [...images];
     copyImages[index]["title"] = e.target.value;
@@ -595,6 +622,23 @@ const EditImage = () => {
     }
   };
 
+  const deleteImage = (indexme) => {
+    const updatedImages = images.filter((item, index) => index !== indexme);
+    setImages(updatedImages);
+
+    // اگر تصویری باقی نماند، مقدار image را هم null کن
+    if (updatedImages.length === 0) {
+      setImage(null);
+    } else {
+      // اگر تصویر حذف شده همان تصویر فعال است، یکی دیگه رو انتخاب کن
+      if (image.name === images[indexme].name) {
+        setImage(updatedImages[0]); // یا می‌تونی null بذاری یا اولین عکس جدید رو انتخاب کنی
+      }
+    }
+
+    updateLinkHotspotSelectOptions();
+  };
+
   return (
     <div className={styles.all}>
 
@@ -620,8 +664,20 @@ const EditImage = () => {
                 setImage(item);
               }}
             >
+              <span
+                className={styles.dele}
+                onClick={(e) => {
+                  e.stopPropagation(); // این مهمه
+                  deleteImage(index);
+                }}
+              >
+                🗑
+              </span>
               <Image src={item.url} alt={item.name} width={70} height={70} />
-              <input onChange={(e) => changeImageTitle(e,index)} value={item.title ?? ""} className={styles.titleImage}/>
+              <input onChange={(e) => {
+                e.stopPropagation();
+                changeImageTitle(e,index)
+                }} value={item.title ?? item.name} className={styles.titleImage}/>
             </div>
           ))}
         </div>
