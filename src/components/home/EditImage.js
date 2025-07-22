@@ -142,9 +142,42 @@ const EditImage = () => {
     hotspotsRef.current = [];
   };
 
+  const renderAllHotspots = () => {
+    clearHotspots();
+    if (image?.infoHotspots?.length > 0) {
+      addInfoHotspotsFromArray(image.infoHotspots);
+    }
+    if (image?.linkHotspots?.length > 0) {
+      addLinkHotspotsFromArray(image.linkHotspots);
+    }
+  };
+
+  const clearInfoHotspots = () => {
+  hotspotsRef.current = hotspotsRef.current.filter((hotspot) => {
+    const isInfo = hotspot._domElement?.classList.contains(styles.infoHotspot);
+    if (isInfo && hotspot._domElement?.parentNode) {
+      hotspot._domElement.parentNode.removeChild(hotspot._domElement);
+    }
+    return !isInfo; // حذفش کن از آرایه
+  });
+  };
+
+  const clearLinkHotspots = () => {
+    hotspotsRef.current = hotspotsRef.current.filter((hotspot) => {
+      const isLink = hotspot._domElement?.classList.contains(styles.linkHotspot);
+      if (isLink && hotspot._domElement?.parentNode) {
+        hotspot._domElement.parentNode.removeChild(hotspot._domElement);
+      }
+      return !isLink;
+    });
+  };
+
+
   const addInfoHotspotsFromArray = (dataArray) => {
     if (!sceneRef.current) return;
-    clearHotspots();
+    // renderAllHotspots();
+    clearInfoHotspots();
+    // clearHotspots();
 
     dataArray.forEach(({ yaw, pitch, title, text, id }, index) => {
       const hotspotElement = document.createElement("div");
@@ -154,11 +187,10 @@ const EditImage = () => {
         <div class="${styles.infoBox}">
           <input placeholder="title" value="${title}" class="${styles.title}" />
           <input placeholder="text" value="${text}" class="${styles.text}" />
+          <button class="${styles.info}">⠿</button>
           <button class="${styles.deleteBtn}">🗑</button>
-          
         </div>
       `;
-      // <button class="${styles.info}">⠿</button>
 
       hotspotElement
         .querySelector(`.${styles.title}`)
@@ -179,15 +211,60 @@ const EditImage = () => {
           deleteHotspotItem(id, "info");
         });
 
+      let isDragging = false;
+
+      hotspotElement.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        isDragging = true;
+        document.body.style.cursor = "grabbing";
+
+        if (viewerRef.current) {
+          viewerRef.current.controls().disable();
+        }
+      });
+
+      document.addEventListener("mouseup", (e) => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.cursor = "default";
+
+          if (viewerRef.current) {
+            viewerRef.current.controls().enable();
+          }
+        }
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging || !sceneRef.current) return;
+
+        e.preventDefault();
+
+        const rect = panoRef.current.getBoundingClientRect();
+
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const coords = currentViewRef.current.screenToCoordinates({ x, y });
+
+        hotspot.setPosition({ yaw: coords.yaw, pitch: coords.pitch });
+
+        inputChange("yaw", index, coords.yaw, "infoHotspots");
+        inputChange("pitch", index, coords.pitch, "infoHotspots");
+      });
+
       const hotspot = sceneRef.current
         .hotspotContainer()
         .createHotspot(hotspotElement, { yaw, pitch });
+
       hotspotsRef.current.push(hotspot);
     });
   };
 
   const addLinkHotspotsFromArray = (dataArray) => {
     if (!sceneRef.current) return;
+    // renderAllHotspots();
+    // clearHotspots();
+    clearLinkHotspots();
 
     dataArray.forEach(({ yaw, pitch, target, id }, index) => {
       const hotspotElement = document.createElement("div");
@@ -211,6 +288,7 @@ const EditImage = () => {
             ${optionsHTML}
           </select>
           <button class="${styles.deleteBtn}">🗑</button>
+          <button class="${styles.info}">⠿</button>
           <button class="${styles.linkIcon}">🔗</button>
         </div>
       `;
@@ -228,12 +306,54 @@ const EditImage = () => {
           deleteHotspotItem(id, "link");
         });
 
+      let isDragging = false;
+
+      hotspotElement.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        isDragging = true;
+        document.body.style.cursor = "grabbing";
+
+        if (viewerRef.current) {
+          viewerRef.current.controls().disable();
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.cursor = "default";
+
+          if (viewerRef.current) {
+            viewerRef.current.controls().enable();
+          }
+        }
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging || !sceneRef.current) return;
+
+        e.preventDefault();
+
+        const rect = panoRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const coords = currentViewRef.current.screenToCoordinates({ x, y });
+
+        hotspot.setPosition({ yaw: coords.yaw, pitch: coords.pitch });
+
+        inputChange("yaw", index, coords.yaw, "linkHotspots");
+        inputChange("pitch", index, coords.pitch, "linkHotspots");
+      });
+
       const hotspot = sceneRef.current
         .hotspotContainer()
         .createHotspot(hotspotElement, { yaw, pitch });
+
       hotspotsRef.current.push(hotspot);
     });
   };
+
 
   const inputChange = (name, index, value, key) => {
     const itemIndex = images.findIndex((item) => item.name === image.name);
@@ -263,32 +383,32 @@ const EditImage = () => {
 
     const panoElement = panoRef.current;
 
-    const handleDoubleClick = (event) => {
-      if (!currentViewRef.current) return;
+    // const handleDoubleClick = (event) => {
+    //   if (!currentViewRef.current) return;
 
-      const rect = panoElement.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const clickY = event.clientY - rect.top;
+    //   const rect = panoElement.getBoundingClientRect();
+    //   const clickX = event.clientX - rect.left;
+    //   const clickY = event.clientY - rect.top;
 
-      const coords = currentViewRef.current.screenToCoordinates({
-        x: clickX,
-        y: clickY,
-      });
+    //   const coords = currentViewRef.current.screenToCoordinates({
+    //     x: clickX,
+    //     y: clickY,
+    //   });
 
-      const fov = currentViewRef.current.fov();
+    //   const fov = currentViewRef.current.fov();
 
-      if (activeEvent === "infohotspot") {
-        addInfoHotspot(coords.yaw, coords.pitch, fov);
-      } else if (activeEvent === "linkhotspot") {
-        addLinkHotspot(coords.yaw, coords.pitch, fov);
-      }
-    };
+    //   if (activeEvent === "infohotspot") {
+    //     addInfoHotspot(coords.yaw, coords.pitch, fov);
+    //   } else if (activeEvent === "linkhotspot") {
+    //     addLinkHotspot(coords.yaw, coords.pitch, fov);
+    //   }
+    // };
 
-    panoElement.addEventListener("dblclick", handleDoubleClick);
+    // panoElement.addEventListener("dblclick", handleDoubleClick);
 
-    return () => {
-      panoElement.removeEventListener("dblclick", handleDoubleClick);
-    };
+    // return () => {
+    //   panoElement.removeEventListener("dblclick", handleDoubleClick);
+    // };
   }, [image, activeEvent]);
 
   useEffect(() => {
@@ -308,6 +428,10 @@ const EditImage = () => {
       addLinkHotspotsFromArray(image.linkHotspots);
     }
   }, [images]);
+
+  useEffect(() => {
+    renderAllHotspots();
+  }, [image.infoHotspots, image.linkHotspots]);
 
   // const handleExport = () => {
   //   navigator.clipboard.writeText(JSON.stringify(images));
@@ -434,27 +558,39 @@ const EditImage = () => {
         </div>
 
         <div className={styles.btns}>
-          <button
+            <button
             className={activeEvent === "infohotspot" ? styles.activEv : ""}
             onClick={() => {
-              alert("Double click to view")
-              setActiveEvent("infohotspot")
+              // setActiveEvent("infohotspot");
+
+              // اضافه کردن هات‌اسپات با موقعیت پیش‌فرض (مثلاً مرکز نمای فعلی)
+              if (currentViewRef.current) {
+                const yaw = currentViewRef.current.yaw();
+                const pitch = currentViewRef.current.pitch();
+                const fov = currentViewRef.current.fov();
+                addInfoHotspot(yaw, pitch, fov);
+              }
             }}
           >
-            <IoIosInformationCircle /> &nbsp;
-            Info Hotspot
+            <IoIosInformationCircle /> &nbsp; Info Hotspot
           </button>
 
           <button
             className={activeEvent === "linkhotspot" ? styles.activEv : ""}
             onClick={() => {
-              alert("Double click to view")
-              setActiveEvent("linkhotspot")
+              // setActiveEvent("linkhotspot");
+
+              if (currentViewRef.current) {
+                const yaw = currentViewRef.current.yaw();
+                const pitch = currentViewRef.current.pitch();
+                const fov = currentViewRef.current.fov();
+                addLinkHotspot(yaw, pitch, fov);
+              }
             }}
           >
-            <MdOutlineLink /> &nbsp;
-            Link Hotspot
+            <MdOutlineLink /> &nbsp; Link Hotspot
           </button>
+
 
           <button onClick={handleFirstView}>
             <FaRegEye />&nbsp;
