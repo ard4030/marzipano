@@ -17,6 +17,12 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
+                hostname: 'marzipano1.storage.c2.liara.space',
+                port: '',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
                 hostname: 'https://marzipano-two.vercel.app',
                 port: '',
                 pathname: '/**',
