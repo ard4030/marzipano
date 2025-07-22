@@ -112,6 +112,10 @@ color: #fff;
   pointer-events: auto;
 }
 
+.infoHotspot .deleteBtn{
+  left: -31px;
+}
+
 
 .infoBox {
 position: relative;
