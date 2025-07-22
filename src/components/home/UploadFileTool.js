@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useContext, useEffect } from "react";
+import React,{ useState, useRef, useContext, useEffect } from "react";
 import { FileContext } from "@/context/FileContext";
 import axios from "axios";
 import { MdFileUpload } from "react-icons/md";
@@ -9,6 +9,8 @@ const UploadFileTool = () => {
   const { setImage, setImages, image } = useContext(FileContext);
   const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef(null);
+  const hasActiveImage = React.useRef(false);
+  
 
   const handleChange = (e) => {
     const files = Array.from(e.target.files);
@@ -43,17 +45,24 @@ const UploadFileTool = () => {
 
         const data = res.data;
 
-        const finalImage = {
-          active: false,
-          url: `${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${data.fileName}`,
-          name: data.fileName,
-          infoHotspots: [],
-          infoLinks: [],
-          initialView: null,
-        };
+      const isActive = hasActiveImage.current;
 
-        if (!image) setImage(finalImage);
-        setImages((prev) => [...prev, finalImage]);
+      const finalImage = {
+        active: isActive,
+        url: `${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${data.fileName}`,
+        name: data.fileName,
+        title: data.fileName,
+        infoHotspots: [],
+        infoLinks: [],
+        initialView: null,
+      };
+
+      if (!isActive && !image) {
+        setImage(finalImage);
+        hasActiveImage.current = true; // تنظیم می‌کنیم که تصویر فعال انتخاب شده
+      }
+
+      setImages((prev) => [...prev, finalImage]);
       } catch (error) {
         console.error("Upload error:", error.message);
       }

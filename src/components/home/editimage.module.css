@@ -147,8 +147,8 @@ color: #fff;
   height: 25px;
   padding: 5px 8px;
   position: absolute;
-  top: 36px;
-  left: -39px;
+  top: 24px;
+  left: -25px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,28 +160,45 @@ color: #fff;
   height: 45px;
   background: #fff;
   border-radius: 100px;
-  top: -22px;
-  left: -61px;
+  top: 23px;
+  left: -23px;
 }
 
 .linkBox{
 background: transparent;
   border-radius: 5px;
-  width: 45px;
-  height: 45px;
+  width: 60px;
+  height: 60px;
   overflow: hidden;
 }
 
 .linkIcon{
-  background: #fff url("https://marzipano1.storage.c2.liara.space/rotate-left.png") no-repeat center;
-  position: absolute;
-  top: -37px;
-  width: 35px;
-  height: 35px;
+cursor: pointer;
+  background: #fff url("https://marzipano1.storage.c2.liara.space/rotate-left.png") center / 53% no-repeat;
   border-radius: 100px;
-  background-size: 53%;
-  left: -9px;
-  cursor: pointer;
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  top: -7px;
+  left: -16px;
+}
+
+.tgbtn{
+background: #fff;
+  border-radius: 100px;
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  top: 51px;
+  left: -8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3px;
+}
+
+.tgbtn svg{
+  width: 12px;
 }
 
 .export{
@@ -195,8 +212,8 @@ background: transparent;
   border-radius: 5px;
   font-size: 14px;
   width: 150px;
-  top: 53px;
-  left: 5px;
+  top: 81px;
+  left: -11px;
 }
 
 .prjname{
@@ -226,4 +243,34 @@ background: transparent;
   .right{width: 100%!important;margin-top: 20px;}
   .btns{flex-wrap: wrap;}
   .btns button{width: 100%!important;margin-bottom: 10px;justify-content: center;}
+}
+
+.optionsList {
+z-index: 1000;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #ccc;
+  width: max-content;
+  max-height: 150px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: absolute;
+  overflow-y: auto;
+  top: 89px;
+  left: -24px;
+}
+
+.optionItem {
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.optionItem:hover {
+  background-color: #f0f0f0;
+}
+
+.activeOption {
+  background-color: #007bff;
+  color: white;
 }

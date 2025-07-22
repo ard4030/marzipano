@@ -8,6 +8,7 @@ const UploadFileMultiDrag = () => {
   const { setImage, setImages, image } = useContext(FileContext);
   const [files, setFiles] = useState([]);
   const [statusList, setStatusList] = useState([]); // success | error | loading
+  const hasActiveImage = React.useRef(false);
 
   const handleChange = (e) => {
     handleFiles(e.target.files);
@@ -51,17 +52,23 @@ const UploadFileMultiDrag = () => {
 
       if (!res.ok) throw new Error("Upload failed");
 
+      const isActive = hasActiveImage.current;
+
       const finalImage = {
-        active: false,
+        active: isActive,
         url: `${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}${data.fileName}`,
         name: data.fileName,
-        title:data.fileName,
+        title: data.fileName,
         infoHotspots: [],
         infoLinks: [],
         initialView: null,
       };
 
-      if (!image) setImage(finalImage);
+      if (!isActive && !image) {
+        setImage(finalImage);
+        hasActiveImage.current = true; // تنظیم می‌کنیم که تصویر فعال انتخاب شده
+      }
+
       setImages((prev) => [...prev, finalImage]);
 
       updateFileStatus(index, "success");
@@ -70,6 +77,7 @@ const UploadFileMultiDrag = () => {
       console.error(err.message);
     }
   };
+
 
   const updateFileStatus = (index, status) => {
     setFiles((prev) =>

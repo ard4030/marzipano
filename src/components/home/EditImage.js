@@ -262,140 +262,145 @@ const EditImage = () => {
     });
   };
 
-  const addLinkHotspotsFromArray = (dataArray) => {
-    
-    if (!sceneRef.current) return;
+const addLinkHotspotsFromArray = (dataArray) => {
+  if (!sceneRef.current) return;
 
-    clearLinkHotspots();
+  clearLinkHotspots();
 
-    dataArray.forEach(({ yaw, pitch, target, id }, index) => {
-      const hotspotElement = document.createElement("div");
-      hotspotElement.className = styles.linkHotspot;
+  dataArray.forEach(({ yaw, pitch, target, id }, index) => {
+    const hotspotElement = document.createElement("div");
+    hotspotElement.className = styles.linkHotspot;
 
-      const optionsHTML = images
-        .map(
-          (item) => `
-          <option value="${item.name}" ${
-            item.name === target ? "selected" : ""
-          }>
-            ${item.title}
-          </option>`
-        )
-        .join("");
+    // ساخت لیست گزینه‌ها به جای سلکت
+    const optionsListHTML = images
+      .map(
+        (item) => `
+        <li class="${styles.optionItem} ${
+          item.name === target ? styles.activeOption : ""
+        }" data-value="${item.name}">
+          ${item.title}
+        </li>`
+      )
+      .join("");
 
-      hotspotElement.innerHTML = `
-        <div class="${styles.linkBox}">
-          <img src="https://marzipano1.storage.c2.liara.space/link.png" />
-          <select class="mtselect ${styles.targetSelect}">
-            ${optionsHTML}
-          </select>
-          <button class="${styles.deleteBtn}">🗑</button>
-          <button class="${styles.info}">⠿</button>
-          <button class="${styles.linkIcon}"></button>
-        </div>
-      `;
+    hotspotElement.innerHTML = `
+      <div class="${styles.linkBox}">
+        <img src="https://marzipano1.storage.c2.liara.space/link.png" />
+        <button class="toggleListBtn ${styles.tgbtn}" type="button" title="Edit Target">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M15.502 1.94a.5.5 0 0 1 0 .706l-1.793 1.793-2.121-2.121 1.793-1.793a.5.5 0 0 1 .707 0l1.414 1.415zM1 13.5V16h2.5l9.353-9.354-2.5-2.5L1 13.5z"/>
+          </svg>
+        </button>
+        <ul class="${styles.optionsList}" style="display:none;">
+          ${optionsListHTML}
+        </ul>
+        <button class="${styles.deleteBtn}" type="button">🗑</button>
+        <button class="${styles.linkIcon}" type="button"></button>
+      </div>
+    `;
 
-      const selectEl = hotspotElement.querySelector(`.${styles.targetSelect}`);
-      
+    const optionsList = hotspotElement.querySelector(`.${styles.optionsList}`);
+    const deleteBtn = hotspotElement.querySelector(`.${styles.deleteBtn}`);
+    const linkIconBtn = hotspotElement.querySelector(`.${styles.linkIcon}`);
+    const toggleListBtn = hotspotElement.querySelector(".toggleListBtn");
+    const imageEl = hotspotElement.querySelector("img");
 
-      const deleteBtn = hotspotElement.querySelector(`.${styles.deleteBtn}`);
-      const linkIconBtn = hotspotElement.querySelector(`.${styles.linkIcon}`);
-      const imageEl = hotspotElement.querySelector("img");
+    const matchedHotspot = image.linkHotspots.find((item) => item.id === id);
+    let rotation = matchedHotspot?.rotate || 0;
+    imageEl.style.transform = `rotate(${rotation}deg)`;
+    imageEl.style.transition = "transform 0.3s ease";
 
-      // مقدار چرخش از state (image)
-      const matchedHotspot = image.linkHotspots.find((item) => item.id === id);
-      let rotation = matchedHotspot?.rotate || 0;
-
-      // اعمال چرخش اولیه روی DOM
-      imageEl.style.transform = `rotate(${rotation}deg)`;
-      imageEl.style.transition = "transform 0.3s ease";
-
-      selectEl?.addEventListener("click", (e) => {
-        e.stopPropagation(); // ⛔ جلوی رسیدن به ویو رو بگیر
-      });
-
-      // تغییر مقصد لینک
-    selectEl?.addEventListener("change", (e) => {
+    // مدیریت نمایش/مخفی کردن لیست
+    toggleListBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      e.preventDefault();
-      inputChange("target", index, e.target.value, "linkHotspots");
-
-      if (viewerRef.current) {
-        viewerRef.current.controls().disable();
+      if (optionsList.style.display === "none" || !optionsList.style.display) {
+        optionsList.style.display = "block";
+        // toggleListBtn.textContent = "▲";
+        viewerRef.current?.controls().disable();
+      } else {
+        optionsList.style.display = "none";
+        toggleListBtn.textContent = "▼";
+        viewerRef.current?.controls().enable();
       }
     });
 
-
-
-
-      // حذف هات‌اسپات
-      deleteBtn?.addEventListener("click", () => {
-        hotspotElement.remove();
-        deleteHotspotItem(id, "link");
-      });
-
-      // کلیک برای چرخاندن آیکون
-      linkIconBtn?.addEventListener("click", () => {
-        rotation += 45;
-        imageEl.style.transform = `rotate(${rotation}deg)`;
-        imageEl.style.transition = "transform 0.3s ease";
-
-        // ذخیره مقدار جدید چرخش در state اصلی
-        setRotation(id, rotation);
-      });
-
-      // درگ کردن برای تغییر مکان
-      let isDragging = false;
-
-
-      hotspotElement.addEventListener("mousedown", (e) => {
+    // مدیریت کلیک روی آیتم‌های لیست
+    optionsList.querySelectorAll("li").forEach((li) => {
+      li.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (viewerRef.current) {
-          viewerRef.current.controls().disable();
-        }
-        isDragging = true;
-        document.body.style.cursor = "grabbing";
 
-        // if (viewerRef.current) {
-        //   viewerRef.current.controls().disable();
-        // }
+        // حذف کلاس اکتیو از همه
+        optionsList.querySelectorAll("li").forEach((item) => {
+          item.classList.remove(styles.activeOption);
+        });
+
+        // اضافه کردن کلاس اکتیو به آیتم کلیک شده
+        li.classList.add(styles.activeOption);
+
+        // ثبت مقدار انتخاب شده
+        const value = li.getAttribute("data-value");
+        inputChange("target", index, value, "linkHotspots");
+
+        // بستن لیست و تغییر متن دکمه
+        optionsList.style.display = "none";
+        toggleListBtn.textContent = "▼";
+        viewerRef.current?.controls().enable();
       });
-
-      document.addEventListener("mouseup", () => {
-        if (isDragging) {
-          isDragging = false;
-          document.body.style.cursor = "default";
-
-          // if (viewerRef.current) {
-          //   viewerRef.current.controls().disable();
-          // }
-        }
-      });
-
-      document.addEventListener("mousemove", (e) => {
-        if (!isDragging || !sceneRef.current) return;
-
-        e.preventDefault();
-
-        const rect = panoRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const coords = currentViewRef.current.screenToCoordinates({ x, y });
-
-        hotspot.setPosition({ yaw: coords.yaw, pitch: coords.pitch });
-
-        inputChange("yaw", index, coords.yaw, "linkHotspots");
-        inputChange("pitch", index, coords.pitch, "linkHotspots");
-      });
-
-      const hotspot = sceneRef.current
-        .hotspotContainer()
-        .createHotspot(hotspotElement, { yaw, pitch });
-
-      hotspotsRef.current.push(hotspot);
     });
-  };
+
+    deleteBtn?.addEventListener("click", () => {
+      hotspotElement.remove();
+      deleteHotspotItem(id, "link");
+    });
+
+    linkIconBtn?.addEventListener("click", () => {
+      rotation += 45;
+      imageEl.style.transform = `rotate(${rotation}deg)`;
+      imageEl.style.transition = "transform 0.3s ease";
+      setRotation(id, rotation);
+    });
+
+    let isDragging = false;
+
+    hotspotElement.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      viewerRef.current?.controls().disable();
+      isDragging = true;
+      document.body.style.cursor = "grabbing";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        document.body.style.cursor = "default";
+      }
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging || !sceneRef.current) return;
+
+      e.preventDefault();
+      const rect = panoRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const coords = currentViewRef.current.screenToCoordinates({ x, y });
+      hotspot.setPosition({ yaw: coords.yaw, pitch: coords.pitch });
+
+      inputChange("yaw", index, coords.yaw, "linkHotspots");
+      inputChange("pitch", index, coords.pitch, "linkHotspots");
+    });
+
+    const hotspot = sceneRef.current
+      .hotspotContainer()
+      .createHotspot(hotspotElement, { yaw, pitch });
+
+    hotspotsRef.current.push(hotspot);
+  });
+};
+
+
+
 
 
   const setRotation = (id, rotation) => {
@@ -656,7 +661,7 @@ const EditImage = () => {
               title={item.title}
               key={index}
               className={`${styles.item} ${
-                image.name === item.name ? styles.active : ""
+                item.name === image.name ? styles.active : ""
               }`}
               onClick={() => {
                 sceneRef.current = null;
