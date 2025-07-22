@@ -165,15 +165,38 @@ color: #fff;
 }
 
 .linkBox{
-background: rgba(255, 255, 255, .82);
+background: transparent;
   border-radius: 5px;
-  width: 98px;
+  width: 45px;
+  height: 45px;
   overflow: hidden;
-  height: 80px;
+}
+
+.linkIcon{
+  background: #fff url("https://marzipano1.storage.c2.liara.space/rotate-left.png") no-repeat center;
+  position: absolute;
+  top: -37px;
+  width: 35px;
+  height: 35px;
+  border-radius: 100px;
+  background-size: 53%;
+  left: -9px;
+  cursor: pointer;
 }
 
 .export{
   background: green!important;
+}
+
+.targetSelect{
+  position: absolute;
+  background: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 150px;
+  top: 53px;
+  left: 5px;
 }
 
 .prjname{

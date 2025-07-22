@@ -104,7 +104,7 @@ function generateMarzipanoHTML(data, baseurl) {
     <div id="pano"></div>
   </div>
 
-  <script src="https://frontme.storage.c2.liara.space/marzipano.js"></script>
+  <script src="https://marzipano1.storage.c2.liara.space/marzipano.js"></script>
   <script>
     const data = ${jsonData};
 
@@ -213,8 +213,7 @@ function generateMarzipanoHTML(data, baseurl) {
   `.trim();
 }
 
-function createMarzipanoHTML(data,BASE_URL,projectName) {
-
+function createMarzipanoHTML(data, BASE_URL, projectName) {
   const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -322,7 +321,7 @@ function createMarzipanoHTML(data,BASE_URL,projectName) {
       display: block;
     }
 
-    .prgname{
+    .prgname {
       z-index: 999;
       background: #ffffff45;
       text-align: center;
@@ -332,18 +331,38 @@ function createMarzipanoHTML(data,BASE_URL,projectName) {
       right: 0px;
       border-radius: 0px 0px 0px 12px;
     }
+
+    .scene-title {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 20px;
+      font-weight: bold;
+      z-index: 20;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
   <div class="prgname">${projectName}</div>
   <div id="sidebar"></div>
   <div id="pano"></div>
-  <script src="https://frontme.storage.c2.liara.space/marzipano.js"></script>
+  <div id="sceneTitle" class="scene-title"></div>
+
+  <script src="https://marzipano1.storage.c2.liara.space/marzipano.js"></script>
   <script>
     const data = ${JSON.stringify(data)};
     const BASE_URL = "${BASE_URL}";
     const viewer = new Marzipano.Viewer(document.getElementById('pano'));
     const scenes = {};
+
+    function updateSceneTitle(title) {
+      document.getElementById('sceneTitle').textContent = title || '';
+    }
 
     // ایجاد همه‌ی صحنه‌ها
     data.forEach(sceneData => {
@@ -365,6 +384,7 @@ function createMarzipanoHTML(data,BASE_URL,projectName) {
     // نمایش اولین صحنه
     const firstScene = scenes[data[0].name];
     firstScene.scene.switchTo();
+    updateSceneTitle(firstScene.data.title);
 
     // ایجاد لیست تصاویر در سایدبار
     const sidebar = document.getElementById('sidebar');
@@ -374,6 +394,7 @@ function createMarzipanoHTML(data,BASE_URL,projectName) {
       thumb.alt = sceneData.name;
       thumb.addEventListener('click', () => {
         scenes[sceneData.name].scene.switchTo();
+        updateSceneTitle(sceneData.title);
       });
       sidebar.appendChild(thumb);
     });
@@ -410,12 +431,14 @@ function createMarzipanoHTML(data,BASE_URL,projectName) {
         dom.className = 'link-hotspot';
 
         const thumb = document.createElement('img');
-        thumb.src = "https://frontme.storage.c2.liara.space/link.png";
+        thumb.src = "https://marzipano1.storage.c2.liara.space/link.png";
         thumb.alt = 'link thumbnail';
+        thumb.style.rotate = link.rotate + "deg";
         dom.appendChild(thumb);
 
         dom.addEventListener('click', () => {
           targetScene.scene.switchTo();
+          updateSceneTitle(targetScene.data.title);
         });
 
         scene.hotspotContainer().createHotspot(dom, { yaw: link.yaw, pitch: link.pitch });

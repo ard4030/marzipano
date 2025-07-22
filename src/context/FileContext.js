@@ -12,7 +12,6 @@ export const FileProvider = ({children}) => {
         // { yaw: Math.PI / 4, pitch: 0.1, title: "Title 2", text: "Text 2" },
         // { yaw: -Math.PI / 6, pitch: -0.2, title: "Title 3", text: "Text 3" }
     ])
-    console.log(images)
 
     return(
         <FileContext value={{

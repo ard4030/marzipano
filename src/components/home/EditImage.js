@@ -100,6 +100,8 @@ const EditImage = () => {
       fov,
       target: image.name,
       id: Date.now(),
+      rotate:0,
+      title:""
     });
   };
 
@@ -261,9 +263,9 @@ const EditImage = () => {
   };
 
   const addLinkHotspotsFromArray = (dataArray) => {
+    
     if (!sceneRef.current) return;
-    // renderAllHotspots();
-    // clearHotspots();
+
     clearLinkHotspots();
 
     dataArray.forEach(({ yaw, pitch, target, id }, index) => {
@@ -276,36 +278,58 @@ const EditImage = () => {
           <option value="${item.name}" ${
             item.name === target ? "selected" : ""
           }>
-            ${item.name}
+            ${item.title}
           </option>`
         )
         .join("");
 
       hotspotElement.innerHTML = `
         <div class="${styles.linkBox}">
-          <img src="${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}/${target}" />
+          <img src="https://marzipano1.storage.c2.liara.space/link.png" />
           <select class="mtselect ${styles.targetSelect}">
             ${optionsHTML}
           </select>
           <button class="${styles.deleteBtn}">🗑</button>
           <button class="${styles.info}">⠿</button>
-          <button class="${styles.linkIcon}">🔗</button>
+          <button class="${styles.linkIcon}"></button>
         </div>
       `;
 
-      hotspotElement
-        .querySelector(`.${styles.targetSelect}`)
-        ?.addEventListener("change", (e) => {
-          inputChange("target", index, e.target.value, "linkHotspots");
-        });
+      const selectEl = hotspotElement.querySelector(`.${styles.targetSelect}`);
+      const deleteBtn = hotspotElement.querySelector(`.${styles.deleteBtn}`);
+      const linkIconBtn = hotspotElement.querySelector(`.${styles.linkIcon}`);
+      const imageEl = hotspotElement.querySelector("img");
 
-      hotspotElement
-        .querySelector(`.${styles.deleteBtn}`)
-        ?.addEventListener("click", () => {
-          hotspotElement.remove();
-          deleteHotspotItem(id, "link");
-        });
+      // مقدار چرخش از state (image)
+      const matchedHotspot = image.linkHotspots.find((item) => item.id === id);
+      let rotation = matchedHotspot?.rotate || 0;
 
+      // اعمال چرخش اولیه روی DOM
+      imageEl.style.transform = `rotate(${rotation}deg)`;
+      imageEl.style.transition = "transform 0.3s ease";
+
+      // تغییر مقصد لینک
+      selectEl?.addEventListener("change", (e) => {
+        inputChange("target", index, e.target.value, "linkHotspots");
+      });
+
+      // حذف هات‌اسپات
+      deleteBtn?.addEventListener("click", () => {
+        hotspotElement.remove();
+        deleteHotspotItem(id, "link");
+      });
+
+      // کلیک برای چرخاندن آیکون
+      linkIconBtn?.addEventListener("click", () => {
+        rotation += 45;
+        imageEl.style.transform = `rotate(${rotation}deg)`;
+        imageEl.style.transition = "transform 0.3s ease";
+
+        // ذخیره مقدار جدید چرخش در state اصلی
+        setRotation(id, rotation);
+      });
+
+      // درگ کردن برای تغییر مکان
       let isDragging = false;
 
       hotspotElement.addEventListener("mousedown", (e) => {
@@ -352,6 +376,24 @@ const EditImage = () => {
 
       hotspotsRef.current.push(hotspot);
     });
+  };
+
+
+  const setRotation = (id, rotation) => {
+    const copyItems = [...images];
+    const index = copyItems.findIndex(item => item.name === image.name)
+
+    const hotspotIndex = copyItems[index]?.linkHotspots?.findIndex(
+      (item) => item.id === id
+    );
+    if (hotspotIndex === -1) return;
+
+    // ست کردن چرخش جدید
+    copyItems[index].linkHotspots[hotspotIndex].rotate = rotation;
+
+    // ✅ این دو خط صحیح هستن
+    setImages(copyItems);
+    setImage(copyItems[index]); // فقط اگه می‌خوای تصویر فعال هم به‌روز بشه
   };
 
 
@@ -494,12 +536,46 @@ const EditImage = () => {
     // }
   };
 
+  const updateLinkHotspotSelectOptions = () => {
+  // تمام select هایی که کلاس مربوطه رو دارن بگیر
+    const selects = document.querySelectorAll(`.${styles.targetSelect}`);
 
-  const changeImageTitle = (e,index) => {
+    selects.forEach((select) => {
+      const currentValue = select.value;
+
+      // ساختن option ها با استفاده از state فعلی تصاویر
+      const newOptionsHTML = images
+        .map(
+          (item) => `
+          <option value="${item.name}" ${
+            item.name === currentValue ? "selected" : ""
+          }>
+            ${item.title}
+          </option>
+        `
+        )
+        .join("");
+
+      // جایگزینی کل options در select
+      select.innerHTML = newOptionsHTML;
+    });
+  };
+
+
+
+  const changeImageTitle = (e, index) => {
     let copyImages = [...images];
     copyImages[index]["title"] = e.target.value;
-    setImages(copyImages)
-  }
+    setImages(copyImages);
+
+    if (image.name === copyImages[index].name) {
+      setImage(copyImages[index]);
+    }
+
+    // آپدیت Select ها
+    updateLinkHotspotSelectOptions();
+  };
+
 
   const toggleAutoRotate = () => {
     if (!viewerRef.current) return;
