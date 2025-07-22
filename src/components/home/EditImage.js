@@ -101,7 +101,7 @@ const EditImage = () => {
       target: image.name,
       id: Date.now(),
       rotate:0,
-      title:""
+      title:image.name
     });
   };
 
