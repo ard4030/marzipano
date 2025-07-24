@@ -208,7 +208,7 @@ background: #fff url("/images/trash-bin.png") center / 70% no-repeat;
 }
 
 .tgbtn{
-background: #fff url("https://marzipano1.storage.c2.liara.space/pencil%281%29.png") no-repeat center;
+background: #fff url("/images/pencil.png") no-repeat center;
 background-size: 50% 50%;
   border-radius: 100px;
   width: 25px;
