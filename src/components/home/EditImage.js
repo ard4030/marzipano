@@ -33,14 +33,8 @@ const EditImage = () => {
     const prevView = currentViewRef.current;
     const prevYaw = prevView?.yaw?.() || 0;
     const prevPitch = prevView?.pitch?.() || 0;
-    // const prevFov = prevView?.fov?.() || Math.PI / 2;
-
-    // const prevView = currentViewRef.current;
-    // const prevYaw = 0;
-    // const prevPitch = 0;
     const prevFov = 1.5707963267948966;
     
-
     const source = window.Marzipano.ImageUrlSource.fromString(image.url);
     const geometry = new window.Marzipano.EquirectGeometry([{ width: 4000 }]);
     const view = new window.Marzipano.RectilinearView({
@@ -155,13 +149,13 @@ const EditImage = () => {
   };
 
   const clearInfoHotspots = () => {
-  hotspotsRef.current = hotspotsRef.current.filter((hotspot) => {
-    const isInfo = hotspot._domElement?.classList.contains(styles.infoHotspot);
-    if (isInfo && hotspot._domElement?.parentNode) {
-      hotspot._domElement.parentNode.removeChild(hotspot._domElement);
-    }
-    return !isInfo; // حذفش کن از آرایه
-  });
+    hotspotsRef.current = hotspotsRef.current.filter((hotspot) => {
+      const isInfo = hotspot._domElement?.classList.contains(styles.infoHotspot);
+      if (isInfo && hotspot._domElement?.parentNode) {
+        hotspot._domElement.parentNode.removeChild(hotspot._domElement);
+      }
+      return !isInfo;
+    });
   };
 
   const clearLinkHotspots = () => {
@@ -174,12 +168,9 @@ const EditImage = () => {
     });
   };
 
-
   const addInfoHotspotsFromArray = (dataArray) => {
     if (!sceneRef.current) return;
-    // renderAllHotspots();
     clearInfoHotspots();
-    // clearHotspots();
 
     dataArray.forEach(({ yaw, pitch, title, text, id }, index) => {
       const hotspotElement = document.createElement("div");
@@ -255,9 +246,6 @@ const EditImage = () => {
         inputChange("pitch", index, coords.pitch, "infoHotspots");
       });
 
-
-
-
       const hotspot = sceneRef.current
         .hotspotContainer()
         .createHotspot(hotspotElement, { yaw, pitch });
@@ -266,165 +254,156 @@ const EditImage = () => {
     });
   };
 
-const addLinkHotspotsFromArray = (dataArray) => {
-  if (!sceneRef.current) return;
+  const addLinkHotspotsFromArray = (dataArray) => {
+    if (!sceneRef.current) return;
 
-  clearLinkHotspots();
+    clearLinkHotspots();
 
-  dataArray.forEach(({ yaw, pitch, target, id }, index) => {
-    const hotspotElement = document.createElement("div");
-    hotspotElement.className = styles.linkHotspot;
+    dataArray.forEach(({ yaw, pitch, target, id }, index) => {
+      const hotspotElement = document.createElement("div");
+      hotspotElement.className = styles.linkHotspot;
 
-    // ساخت لیست گزینه‌ها به جای سلکت
-    const optionsListHTML = images
-      .map(
-        (item) => `
-        <li class="${styles.optionItem} ${
-          item.name === target ? styles.activeOption : ""
-        }" data-value="${item.name}">
-          ${item.title}
-        </li>`
-      )
-      .join("");
+      const optionsListHTML = images
+        .map(
+          (item) => `
+          <li class="${styles.optionItem} ${
+            item.name === target ? styles.activeOption : ""
+          }" data-value="${item.name}">
+            ${item.title}
+          </li>`
+        )
+        .join("");
 
-    hotspotElement.innerHTML = `
-      <div class="${styles.linkBox}">
-        <img src="https://marzipano1.storage.c2.liara.space/link.png" />
-        <button class="toggleListBtn ${styles.tgbtn}" type="button" title="Edit Target">
- 
-        </button>
-        <div class=" ${styles.optionsList}" style="display:none;">
-          <div class="${styles.heasd}">
-            <span>Select target scene</span>
-            <span class="toggleListBtnClose ${styles.clss}"></span>
+      hotspotElement.innerHTML = `
+        <div class="${styles.linkBox}">
+          <img src="https://marzipano1.storage.c2.liara.space/link.png" />
+          <button class="toggleListBtn ${styles.tgbtn}" type="button" title="Edit Target">
+  
+          </button>
+          <div class=" ${styles.optionsList}" style="display:none;">
+            <div class="${styles.heasd}">
+              <span>Select target scene</span>
+              <span class="toggleListBtnClose ${styles.clss}"></span>
+            </div>
+            <ul>
+              ${optionsListHTML}
+            </ul>
+          
           </div>
-          <ul>
-            ${optionsListHTML}
-          </ul>
-        
+          <button class="${styles.deleteBtn}" type="button"></button>
+          <button class="${styles.linkIcon}" type="button"></button>
         </div>
-        <button class="${styles.deleteBtn}" type="button"></button>
-        <button class="${styles.linkIcon}" type="button"></button>
-      </div>
-    `;
+      `;
 
-    const optionsList = hotspotElement.querySelector(`.${styles.optionsList}`);
-    const deleteBtn = hotspotElement.querySelector(`.${styles.deleteBtn}`);
-    const linkIconBtn = hotspotElement.querySelector(`.${styles.linkIcon}`);
-    const toggleListBtn = hotspotElement.querySelector(".toggleListBtn");
-    const toggleListBtnClose = hotspotElement.querySelector(".toggleListBtnClose");
-    const imageEl = hotspotElement.querySelector("img");
+      const optionsList = hotspotElement.querySelector(`.${styles.optionsList}`);
+      const deleteBtn = hotspotElement.querySelector(`.${styles.deleteBtn}`);
+      const linkIconBtn = hotspotElement.querySelector(`.${styles.linkIcon}`);
+      const toggleListBtn = hotspotElement.querySelector(".toggleListBtn");
+      const toggleListBtnClose = hotspotElement.querySelector(".toggleListBtnClose");
+      const imageEl = hotspotElement.querySelector("img");
 
-    const matchedHotspot = image.linkHotspots.find((item) => item.id === id);
-    let rotation = matchedHotspot?.rotate || 0;
-    imageEl.style.transform = `rotate(${rotation}deg)`;
-    imageEl.style.transition = "transform 0.3s ease";
-
-    // مدیریت نمایش/مخفی کردن لیست
-    toggleListBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (optionsList.style.display === "none" || !optionsList.style.display) {
-        optionsList.style.display = "block";
-        // toggleListBtn.textContent = "▲";
-        viewerRef.current?.controls().disable();
-      } else {
-        optionsList.style.display = "none";
-        toggleListBtn.textContent = "▼";
-        viewerRef.current?.controls().enable();
-      }
-    });
-
-    toggleListBtnClose.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (optionsList.style.display === "none" || !optionsList.style.display) {
-        optionsList.style.display = "block";
-        // toggleListBtn.textContent = "▲";
-        viewerRef.current?.controls().disable();
-      } else {
-        optionsList.style.display = "none";
-        toggleListBtn.textContent = "▼";
-        viewerRef.current?.controls().enable();
-      }
-    });
-
-    // مدیریت کلیک روی آیتم‌های لیست
-    optionsList.querySelectorAll("li").forEach((li) => {
-      li.addEventListener("click", (e) => {
-        e.stopPropagation();
-
-        // حذف کلاس اکتیو از همه
-        optionsList.querySelectorAll("li").forEach((item) => {
-          item.classList.remove(styles.activeOption);
-        });
-
-        // اضافه کردن کلاس اکتیو به آیتم کلیک شده
-        li.classList.add(styles.activeOption);
-
-        // ثبت مقدار انتخاب شده
-        const value = li.getAttribute("data-value");
-        inputChange("target", index, value, "linkHotspots");
-
-        // بستن لیست و تغییر متن دکمه
-        optionsList.style.display = "none";
-        toggleListBtn.textContent = "▼";
-        viewerRef.current?.controls().enable();
-      });
-    });
-
-    deleteBtn?.addEventListener("click", () => {
-      hotspotElement.remove();
-      deleteHotspotItem(id, "link");
-    });
-
-    linkIconBtn?.addEventListener("click", () => {
-      rotation += 45;
+      const matchedHotspot = image.linkHotspots.find((item) => item.id === id);
+      let rotation = matchedHotspot?.rotate || 0;
       imageEl.style.transform = `rotate(${rotation}deg)`;
       imageEl.style.transition = "transform 0.3s ease";
-      setRotation(id, rotation);
+
+
+      toggleListBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (optionsList.style.display === "none" || !optionsList.style.display) {
+          optionsList.style.display = "block";
+          // toggleListBtn.textContent = "▲";
+          viewerRef.current?.controls().disable();
+        } else {
+          optionsList.style.display = "none";
+          toggleListBtn.textContent = "▼";
+          viewerRef.current?.controls().enable();
+        }
+      });
+
+      toggleListBtnClose.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (optionsList.style.display === "none" || !optionsList.style.display) {
+          optionsList.style.display = "block";
+          // toggleListBtn.textContent = "▲";
+          viewerRef.current?.controls().disable();
+        } else {
+          optionsList.style.display = "none";
+          toggleListBtn.textContent = "▼";
+          viewerRef.current?.controls().enable();
+        }
+      });
+
+    
+      optionsList.querySelectorAll("li").forEach((li) => {
+        li.addEventListener("click", (e) => {
+          e.stopPropagation();
+         
+          optionsList.querySelectorAll("li").forEach((item) => {
+            item.classList.remove(styles.activeOption);
+          });
+          
+          li.classList.add(styles.activeOption);
+        
+          const value = li.getAttribute("data-value");
+          inputChange("target", index, value, "linkHotspots");
+
+          optionsList.style.display = "none";
+          toggleListBtn.textContent = "▼";
+          viewerRef.current?.controls().enable();
+        });
+      });
+
+      deleteBtn?.addEventListener("click", () => {
+        hotspotElement.remove();
+        deleteHotspotItem(id, "link");
+      });
+
+      linkIconBtn?.addEventListener("click", () => {
+        rotation += 45;
+        imageEl.style.transform = `rotate(${rotation}deg)`;
+        imageEl.style.transition = "transform 0.3s ease";
+        setRotation(id, rotation);
+      });
+
+      let isDragging = false;
+
+      hotspotElement.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        viewerRef.current?.controls().disable();
+        isDragging = true;
+        document.body.style.cursor = "grabbing";
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.cursor = "default";
+        }
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging || !sceneRef.current) return;
+
+        e.preventDefault();
+        const rect = panoRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const coords = currentViewRef.current.screenToCoordinates({ x, y });
+        hotspot.setPosition({ yaw: coords.yaw, pitch: coords.pitch });
+
+        inputChange("yaw", index, coords.yaw, "linkHotspots");
+        inputChange("pitch", index, coords.pitch, "linkHotspots");
+      });
+
+      const hotspot = sceneRef.current
+        .hotspotContainer()
+        .createHotspot(hotspotElement, { yaw, pitch });
+
+      hotspotsRef.current.push(hotspot);
     });
-
-    let isDragging = false;
-
-    hotspotElement.addEventListener("mousedown", (e) => {
-      e.stopPropagation();
-      viewerRef.current?.controls().disable();
-      isDragging = true;
-      document.body.style.cursor = "grabbing";
-    });
-
-    document.addEventListener("mouseup", () => {
-      if (isDragging) {
-        isDragging = false;
-        document.body.style.cursor = "default";
-      }
-    });
-
-    document.addEventListener("mousemove", (e) => {
-      if (!isDragging || !sceneRef.current) return;
-
-      e.preventDefault();
-      const rect = panoRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const coords = currentViewRef.current.screenToCoordinates({ x, y });
-      hotspot.setPosition({ yaw: coords.yaw, pitch: coords.pitch });
-
-      inputChange("yaw", index, coords.yaw, "linkHotspots");
-      inputChange("pitch", index, coords.pitch, "linkHotspots");
-    });
-
-    const hotspot = sceneRef.current
-      .hotspotContainer()
-      .createHotspot(hotspotElement, { yaw, pitch });
-
-    hotspotsRef.current.push(hotspot);
-  });
-};
-
-
-
-
+  };
 
   const setRotation = (id, rotation) => {
     const copyItems = [...images];
@@ -435,12 +414,10 @@ const addLinkHotspotsFromArray = (dataArray) => {
     );
     if (hotspotIndex === -1) return;
 
-    // ست کردن چرخش جدید
     copyItems[index].linkHotspots[hotspotIndex].rotate = rotation;
 
-    // ✅ این دو خط صحیح هستن
     setImages(copyItems);
-    setImage(copyItems[index]); // فقط اگه می‌خوای تصویر فعال هم به‌روز بشه
+    setImage(copyItems[index]); 
   };
 
 
@@ -453,7 +430,6 @@ const addLinkHotspotsFromArray = (dataArray) => {
     setImages(updatedImages);
   };
 
-  // ← ← ← این useEffect برای ساخت Viewer و غیرفعال کردن scroll zoom
   useEffect(() => {
     if (!image || !panoRef.current) return;
 
@@ -472,32 +448,6 @@ const addLinkHotspotsFromArray = (dataArray) => {
 
     const panoElement = panoRef.current;
 
-    // const handleDoubleClick = (event) => {
-    //   if (!currentViewRef.current) return;
-
-    //   const rect = panoElement.getBoundingClientRect();
-    //   const clickX = event.clientX - rect.left;
-    //   const clickY = event.clientY - rect.top;
-
-    //   const coords = currentViewRef.current.screenToCoordinates({
-    //     x: clickX,
-    //     y: clickY,
-    //   });
-
-    //   const fov = currentViewRef.current.fov();
-
-    //   if (activeEvent === "infohotspot") {
-    //     addInfoHotspot(coords.yaw, coords.pitch, fov);
-    //   } else if (activeEvent === "linkhotspot") {
-    //     addLinkHotspot(coords.yaw, coords.pitch, fov);
-    //   }
-    // };
-
-    // panoElement.addEventListener("dblclick", handleDoubleClick);
-
-    // return () => {
-    //   panoElement.removeEventListener("dblclick", handleDoubleClick);
-    // };
   }, [image, activeEvent]);
 
   useEffect(() => {
@@ -532,38 +482,6 @@ const addLinkHotspotsFromArray = (dataArray) => {
   }, [])
   
 
-  // const handleExport = () => {
-  //   navigator.clipboard.writeText(JSON.stringify(images));
-  //   // const htmlContent = generateMarzipanoHTML(images, "http://localhost:3000");
-  //   const htmlContent = createMarzipanoHTML(images)
-
-  //   const blob = new Blob([htmlContent], { type: "text/html" });
-  //   const a = document.createElement("a");
-  //   a.href = URL.createObjectURL(blob);
-  //   a.download = "panorama.html";
-  //   a.click();
-  // };
-
-  // const handleExport = async () => {
-  //   const htmlContent = createMarzipanoHTML(images,`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}`);
-
-  //   // ارسال به API
-  //   const res = await fetch('/api/save-html', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json'
-  //     },
-  //     body: JSON.stringify({ html: htmlContent })
-  //   });
-
-  //   if (res.ok) {
-  //     // باز کردن در تب جدید
-  //     window.open('/generated/viewer.html', '_blank');
-  //   } else {
-  //     alert('خطا در ذخیره فایل HTML');
-  //   }
-  // };
-
   const handleExport = async () => {
     const htmlContent = createMarzipanoHTML(images,`${process.env.NEXT_PUBLIC_LIARA_IMAGE_URL}`,projectName);
 
@@ -571,7 +489,6 @@ const addLinkHotspotsFromArray = (dataArray) => {
       type: "text/html",
     });
 
-    // ارسال به API
     const formData = new FormData();
     formData.append("file", file);
 
@@ -583,24 +500,16 @@ const addLinkHotspotsFromArray = (dataArray) => {
     const data = await res.json();
     window.open(data.url, '_blank');
     console.log("آپلود شد:", data.url);
-    // return data.url;
 
-    // if (res.ok) {
-    //   // باز کردن در تب جدید
-    //   window.open('/generated/viewer.html', '_blank');
-    // } else {
-    //   alert('خطا در ذخیره فایل HTML');
-    // }
   };
 
   const updateLinkHotspotSelectOptions = () => {
-  // تمام select هایی که کلاس مربوطه رو دارن بگیر
+
     const selects = document.querySelectorAll(`.${styles.targetSelect}`);
 
     selects.forEach((select) => {
       const currentValue = select.value;
 
-      // ساختن option ها با استفاده از state فعلی تصاویر
       const newOptionsHTML = images
         .map(
           (item) => `
@@ -613,7 +522,6 @@ const addLinkHotspotsFromArray = (dataArray) => {
         )
         .join("");
 
-      // جایگزینی کل options در select
       select.innerHTML = newOptionsHTML;
     });
   };
@@ -627,7 +535,6 @@ const addLinkHotspotsFromArray = (dataArray) => {
       setImage(copyImages[index]);
     }
 
-    // آپدیت Select ها
     updateLinkHotspotSelectOptions();
   };
 
@@ -640,7 +547,7 @@ const addLinkHotspotsFromArray = (dataArray) => {
       setAutoRotateEnabled(false);
     } else {
       autoRotateRef.current = window.Marzipano.autorotate({
-        yawSpeed: 0.1, // سرعت چرخش
+        yawSpeed: 0.1, 
         targetPitch: 0,
         targetFov: Math.PI / 2,
       });
@@ -654,13 +561,11 @@ const addLinkHotspotsFromArray = (dataArray) => {
     const updatedImages = images.filter((item, index) => index !== indexme);
     setImages(updatedImages);
 
-    // اگر تصویری باقی نماند، مقدار image را هم null کن
     if (updatedImages.length === 0) {
       setImage(null);
     } else {
-      // اگر تصویر حذف شده همان تصویر فعال است، یکی دیگه رو انتخاب کن
       if (image.name === images[indexme].name) {
-        setImage(updatedImages[0]); // یا می‌تونی null بذاری یا اولین عکس جدید رو انتخاب کنی
+        setImage(updatedImages[0]);
       }
     }
 
@@ -721,9 +626,6 @@ const addLinkHotspotsFromArray = (dataArray) => {
             <button
             className={activeEvent === "infohotspot" ? styles.activEv : ""}
             onClick={() => {
-              // setActiveEvent("infohotspot");
-
-              // اضافه کردن هات‌اسپات با موقعیت پیش‌فرض (مثلاً مرکز نمای فعلی)
               if (currentViewRef.current) {
                 const yaw = currentViewRef.current.yaw();
                 const pitch = currentViewRef.current.pitch();
@@ -738,8 +640,6 @@ const addLinkHotspotsFromArray = (dataArray) => {
           <button
             className={activeEvent === "linkhotspot" ? styles.activEv : ""}
             onClick={() => {
-              // setActiveEvent("linkhotspot");
-
               if (currentViewRef.current) {
                 const yaw = currentViewRef.current.yaw();
                 const pitch = currentViewRef.current.pitch();

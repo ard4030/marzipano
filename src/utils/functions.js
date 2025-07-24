@@ -2,7 +2,7 @@
 
 
 function generateMarzipanoHTML(data, baseurl) {
-  // تبدیل initialView به initialViewParameters
+
   const fixedData = data.map(scene => {
     const { initialView, ...rest } = scene;
     return {

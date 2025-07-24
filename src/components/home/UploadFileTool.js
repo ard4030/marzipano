@@ -59,7 +59,7 @@ const UploadFileTool = () => {
 
       if (!isActive && !image) {
         setImage(finalImage);
-        hasActiveImage.current = true; // تنظیم می‌کنیم که تصویر فعال انتخاب شده
+        hasActiveImage.current = true;
       }
 
       setImages((prev) => [...prev, finalImage]);

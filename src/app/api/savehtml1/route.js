@@ -19,7 +19,7 @@ export async function POST(req) {
     Key: newFileName,
     Body: buffer,
     ContentType: file.type,
-    ACL: "public-read", // برای لینک عمومی
+    ACL: "public-read", 
   });
 
   try {

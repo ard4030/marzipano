@@ -11,7 +11,6 @@ export async function POST(req) {
 
   const filePath = path.join(process.cwd(), 'public', 'generated', 'viewer.html');
 
-  // اطمینان از وجود دایرکتوری
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
   try {

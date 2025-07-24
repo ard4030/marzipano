@@ -146,7 +146,7 @@ position: relative;
 .deleteBtn {
 color: #fff;
   cursor: pointer;
-  background: #fff url("/images/trash-bin\(1\).png") no-repeat center;
+  background: #fff url("/images/trash-bin.png") no-repeat center;
   background-size: 70%;
   border: none;
   border-radius: 100px;
@@ -182,7 +182,7 @@ background: transparent;
 
 .linkIcon{
 cursor: pointer;
-  background: #fff url("/images/pencil\(1\).png") center / 53% no-repeat;
+  background: #fff url("/images/rotate.png") center / 53% no-repeat;
   border-radius: 100px;
   width: 25px;
   height: 25px;
@@ -198,7 +198,7 @@ cursor: pointer;
 }
 
 .dele{
-background: #fff url("/images/trash-bin\(1\).png") center / 70% no-repeat;
+background: #fff url("/images/trash-bin.png") center / 70% no-repeat;
   width: 20px;
   height: 20px;
   display: inline-block;
