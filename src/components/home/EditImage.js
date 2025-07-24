@@ -189,8 +189,8 @@ const EditImage = () => {
         <div class="${styles.infoBox}">
           <input placeholder="title" value="${title}" class="${styles.title}" />
           <input placeholder="text" value="${text}" class="${styles.text}" />
-          <button class="${styles.info}">⠿</button>
-          <button class="${styles.deleteBtn}">🗑</button>
+          <button class="${styles.info}"></button>
+          <button class="${styles.deleteBtn}"></button>
         </div>
       `;
 
@@ -215,6 +215,7 @@ const EditImage = () => {
 
       let isDragging = false;
 
+      // Web
       hotspotElement.addEventListener("mousedown", (e) => {
         e.stopPropagation();
         isDragging = true;
@@ -254,6 +255,9 @@ const EditImage = () => {
         inputChange("pitch", index, coords.pitch, "infoHotspots");
       });
 
+
+
+
       const hotspot = sceneRef.current
         .hotspotContainer()
         .createHotspot(hotspotElement, { yaw, pitch });
@@ -287,14 +291,19 @@ const addLinkHotspotsFromArray = (dataArray) => {
       <div class="${styles.linkBox}">
         <img src="https://marzipano1.storage.c2.liara.space/link.png" />
         <button class="toggleListBtn ${styles.tgbtn}" type="button" title="Edit Target">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M15.502 1.94a.5.5 0 0 1 0 .706l-1.793 1.793-2.121-2.121 1.793-1.793a.5.5 0 0 1 .707 0l1.414 1.415zM1 13.5V16h2.5l9.353-9.354-2.5-2.5L1 13.5z"/>
-          </svg>
+ 
         </button>
-        <ul class="${styles.optionsList}" style="display:none;">
-          ${optionsListHTML}
-        </ul>
-        <button class="${styles.deleteBtn}" type="button">🗑</button>
+        <div class=" ${styles.optionsList}" style="display:none;">
+          <div class="${styles.heasd}">
+            <span>Select target scene</span>
+            <span class="toggleListBtnClose ${styles.clss}"></span>
+          </div>
+          <ul>
+            ${optionsListHTML}
+          </ul>
+        
+        </div>
+        <button class="${styles.deleteBtn}" type="button"></button>
         <button class="${styles.linkIcon}" type="button"></button>
       </div>
     `;
@@ -303,6 +312,7 @@ const addLinkHotspotsFromArray = (dataArray) => {
     const deleteBtn = hotspotElement.querySelector(`.${styles.deleteBtn}`);
     const linkIconBtn = hotspotElement.querySelector(`.${styles.linkIcon}`);
     const toggleListBtn = hotspotElement.querySelector(".toggleListBtn");
+    const toggleListBtnClose = hotspotElement.querySelector(".toggleListBtnClose");
     const imageEl = hotspotElement.querySelector("img");
 
     const matchedHotspot = image.linkHotspots.find((item) => item.id === id);
@@ -312,6 +322,19 @@ const addLinkHotspotsFromArray = (dataArray) => {
 
     // مدیریت نمایش/مخفی کردن لیست
     toggleListBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (optionsList.style.display === "none" || !optionsList.style.display) {
+        optionsList.style.display = "block";
+        // toggleListBtn.textContent = "▲";
+        viewerRef.current?.controls().disable();
+      } else {
+        optionsList.style.display = "none";
+        toggleListBtn.textContent = "▼";
+        viewerRef.current?.controls().enable();
+      }
+    });
+
+    toggleListBtnClose.addEventListener("click", (e) => {
       e.stopPropagation();
       if (optionsList.style.display === "none" || !optionsList.style.display) {
         optionsList.style.display = "block";
@@ -676,7 +699,7 @@ const addLinkHotspotsFromArray = (dataArray) => {
                   deleteImage(index);
                 }}
               >
-                🗑
+                
               </span>
               <Image src={item.url} alt={item.name} width={70} height={70} />
               <input onChange={(e) => {

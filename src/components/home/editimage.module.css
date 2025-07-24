@@ -25,6 +25,7 @@
     height: max-content;
     border: 1px solid #eee;
     padding: 10px;
+    background: #333;
 }
 
 .right{
@@ -50,6 +51,7 @@
   padding: 10px;
   border-bottom: 1px solid #eee;
   cursor: pointer;
+  position: relative;
 }
 
 .imageList > div:last-child{
@@ -68,10 +70,10 @@
 }
 
 .active{
-    background: #c5fdc5;
+    background: #00abff;
   border-radius: 5px;
-  border: 1px solid green;
-  border-bottom: 1px solid green!important;
+  border: 1px solid #00abff;
+  border-bottom: 1px solid #00abff!important;
 }
 
 .imageList{
@@ -144,7 +146,8 @@ position: relative;
 .deleteBtn {
 color: #fff;
   cursor: pointer;
-  background: #f04949;
+  background: #fff url("/images/trash-bin\(1\).png") no-repeat center;
+  background-size: 70%;
   border: none;
   border-radius: 100px;
   width: 25px;
@@ -156,14 +159,15 @@ color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  filter: invert();
 }
 
 .info{
-position: absolute;
+background: #3333338a url("/images/info.png") center / 100% no-repeat;
+  border-radius: 100px;
   width: 45px;
   height: 45px;
-  background: #fff;
-  border-radius: 100px;
+  position: absolute;
   top: -27px;
   left: -55px;
 }
@@ -178,17 +182,34 @@ background: transparent;
 
 .linkIcon{
 cursor: pointer;
-  background: #fff url("https://marzipano1.storage.c2.liara.space/rotate-left.png") center / 53% no-repeat;
+  background: #fff url("/images/pencil\(1\).png") center / 53% no-repeat;
   border-radius: 100px;
   width: 25px;
   height: 25px;
   position: absolute;
   top: -7px;
   left: -16px;
+  filter: invert();
+}
+
+.deleteBtn:hover,.linkIcon:hover,.tgbtn:hover{
+  filter: inherit!important;
+  cursor: pointer;
+}
+
+.dele{
+background: #fff url("/images/trash-bin\(1\).png") center / 70% no-repeat;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  border-radius: 100px;
+  position: absolute;
+  top: 4px;
 }
 
 .tgbtn{
-background: #fff;
+background: #fff url("https://marzipano1.storage.c2.liara.space/pencil%281%29.png") no-repeat center;
+background-size: 50% 50%;
   border-radius: 100px;
   width: 25px;
   height: 25px;
@@ -199,6 +220,7 @@ background: #fff;
   justify-content: center;
   align-items: center;
   font-size: 3px;
+  filter: invert();
 }
 
 .tgbtn svg{
@@ -226,17 +248,20 @@ background: #fff;
   border: 1px solid #333;
   border-radius: 4px;
   padding: 10px;
-  background: #eee;
+  background: #f8f8f8;
+  color: #333;
 }
 
 .titleImage{
+box-sizing: border-box;
   background: #fff;
-  margin-left: 8px;
-  padding: 6px 5px;
-  box-sizing: border-box;
-  width: 80%;
-  font-size: 14px;
   border-radius: 3px;
+  width: 80%;
+  margin-left: 8px;
+  padding: 9px 9px;
+  font-size: 14px;
+  color: #333;
+  font-size: 13px;
 }
 
 .infoBox > input:first-child{border-radius: 4px 4px 0px 0px;}
@@ -252,7 +277,7 @@ background: #fff;
 .optionsList {
 z-index: 1000;
   cursor: pointer;
-  background: #fff;
+  background: #4e4e4e;
   border: 1px solid #ccc;
   width: max-content;
   max-height: 150px;
@@ -263,6 +288,27 @@ z-index: 1000;
   overflow-y: auto;
   top: 89px;
   left: -24px;
+  color: #fff;
+  border-radius: 5px;
+}
+
+.optionsList ul{
+  background: #626262;
+}
+
+.heasd{
+  padding: 7px 9px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clss{
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: url("/images/close.png") no-repeat center;
+  background-size: 100% 100%;
 }
 
 .optionItem {
@@ -271,7 +317,7 @@ z-index: 1000;
 }
 
 .optionItem:hover {
-  background-color: #f0f0f0;
+  background-color: #1c1a1a;
 }
 
 .activeOption {
